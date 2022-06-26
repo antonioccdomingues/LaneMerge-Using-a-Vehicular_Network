@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Lane Merge Visualization</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{{url_for('static', filename='styles.css')}}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9M86-1yyuucibiNR-wh8kiboANAcUjuI&libraries=visualization"
+        async></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://kit.fontawesome.com/e347a7d6fb.js" crossorigin="anonymous"></script>
+    <script>
+        var car_1, car_2, car_3, car_merge, bl, fl, new_position
+        function loadMap() {
+            // create the map
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 19,
+                center: { lat: 41.703456, lng: -8.797550 },
+                //center: {lat: 39.68510168855263, lng: -8.686979090299104},
+                mapTypeId: "satellite",
+            });
+            rsu_road = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='antenna.png')}}",
+                    scaledSize: new google.maps.Size(80, 80),
+                },
+                title: "RSU",
+                map: map,
+            });
+            car_1 = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='car.png')}}",
+                    scaledSize: new google.maps.Size(22, 22),
+                    anchor: new google.maps.Point(0, 11),
+                },
+                title: "OBU",
+                map: map,
+            });
+            car_2 = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='car.png')}}",
+                    scaledSize: new google.maps.Size(22, 22),
+                    anchor: new google.maps.Point(0, 11),
+                },
+                title: "OBU",
+                map: map,
+            });
+            car_3 = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='car.png')}}",
+                    scaledSize: new google.maps.Size(22, 22),
+                    anchor: new google.maps.Point(0, 11),
+                },
+                title: "OBU",
+                map: map,
+            });
+            car_merge = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='car_merge.png')}}",
+                    scaledSize: new google.maps.Size(22, 22),
+                    anchor: new google.maps.Point(0, 11),
+                },
+                title: "OBU",
+                map: map,
+            });
+            new_position = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='intersection.png')}}",
+                    scaledSize: new google.maps.Size(12, 12),
+                    anchor: new google.maps.Point(0, 6),
+                },
+                title: "OBU",
+                map: map,
+            });
+            bl = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='limit.png')}}",
+                    scaledSize: new google.maps.Size(12, 12),
+                    anchor: new google.maps.Point(0, 6),
+                },
+                title: "OBU",
+                map: map,
+            });
+            fl = new google.maps.Marker({
+                position: new google.maps.LatLng(0, 0),
+                icon: {
+                    url: "{{url_for('static', filename='limit.png')}}",
+                    scaledSize: new google.maps.Size(12, 12),
+                    anchor: new google.maps.Point(0, 6),
+                },
+                title: "OBU",
+                map: map,
+            });
+        }
+
+        // every 10 seconds
+        setInterval(updateMarker, {{ refresh_rate }});
+
+        function updateMarker() {
+            $.get('/get_status', {}, function (json) {
+                var LatLng1 = new google.maps.LatLng(json.car_merge.coords[0], json.car_merge.coords[1]);
+                var LatLng2 = new google.maps.LatLng(json.car_1.coords[0], json.car_1.coords[1]);
+                var LatLng3 = new google.maps.LatLng(json.car_2.coords[0], json.car_2.coords[1]);
+                var LatLng4 = new google.maps.LatLng(json.bl.coords[0], json.bl.coords[1]);
+                var LatLng5 = new google.maps.LatLng(json.fl.coords[0], json.fl.coords[1]);
+                var LatLng6 = new google.maps.LatLng(json.new_position.coords[0], json.new_position.coords[1]);
+                var LatLng7 = new google.maps.LatLng(json.car_3.coords[0], json.car_3.coords[1]);
+                car_merge.setPosition(LatLng1);
+                car_1.setPosition(LatLng2);
+                car_2.setPosition(LatLng3);
+                car_3.setPosition(LatLng7);
+                bl.setPosition(LatLng4);
+                fl.setPosition(LatLng5);
+                new_position.setPosition(LatLng6)
+
+                // Update Coords
+                document.getElementById('car_1_coords').innerText = json.car_1.coords[0] + " , " + json.car_1.coords[1];
+                document.getElementById('car_2_coords').innerText = json.car_2.coords[0] + " , " + json.car_2.coords[1];
+                document.getElementById('car_3_coords').innerText = json.car_3.coords[0] + " , " + json.car_3.coords[1];
+                document.getElementById('car_merge_coords').innerText = json.car_merge.coords[0] + " , " + json.car_merge.coords[1];
+                // Update Speed 
+                document.getElementById('car_1_speed').innerText = json.car_1.speed + " km/h";
+                document.getElementById('car_2_speed').innerText = json.car_2.speed + " km/h";
+                document.getElementById('car_3_speed').innerText = json.car_3.speed + " km/h";
+                document.getElementById('car_merge_speed').innerText = json.car_merge.speed + " km/h";
+                // Update Status 
+                document.getElementById('car_1_state').innerText = json.car_1.state;
+                document.getElementById('car_2_state').innerText = json.car_2.state;
+                document.getElementById('car_3_state').innerText = json.car_3.state;
+                document.getElementById('car_merge_state').innerText = json.car_merge.state;
+            });
+        }
+
+        function kill_sim(){$.get('/kill_simulation')}
+    </script>
+</head>
+
+<body onload="loadMap()" style="margin: 0;">
+    <div class="header">
+        <h1 href="#default" class="logo">Lane Merge Visualization</h1>
+        <div class="header-left">
+            <form method="POST" action="/">
+                <button class="button" type="submit" name="situation1" value="sit1">Situation 1</button>
+                <button class="button" type="submit" name="situation2" value="sit2">Situation 2</button>
+                <button class="button" type="submit" name="situation3" value="sit3">Situation 3</button>
+                <button class="button" type="submit" name="situation4" value="sit4">Fully Randomized </button>
+            </form>
+        </div>
+        <button class="button_reset" style="margin-left:150px" onclick="kill_sim()">Kill Simulation </button>
+        <div class="header-right">
+            <img style="height: 50px; margin: 10px;" src="{{url_for('static', filename='ua.png')}}">
+            <img style="height: 50px; margin: 10px;" src="{{url_for('static', filename='logo.png')}}">
+        </div>
+    </div>
+
+    <section>
+        <nav>
+            <div class="split left">
+                <h1><i class="fa-solid fa-circle-info fa-xs"></i> Simulation status</h1>
+                <!-- RSU Informations -->
+                <h3>RSU</h3>
+                <div class="info">
+                    <p>
+                        <i class="fa-solid fa-circle-xmark"></i> {{intersection_point}}
+                    </p>
+                </div>
+                <hr>
+
+                <!-- OBU 1 Informations -->
+                <h3>OBU 1</h3>
+                <div class="info">
+                    <div class="top_info">
+                        <p>
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span id="car_1_speed"> </span>&emsp;
+                        </p>
+                        <p>
+                            <i class="fa-solid fa-car-side"></i>
+                            <span id="car_1_state"></span>
+                        </p>
+                    </div>
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="car_1_coords"></span>
+                    </p>
+                </div>
+                <hr>
+
+                <!-- OBU 2 Informations -->
+                <h3>OBU 2</h3>
+                <div class="info">
+                    <div class="top_info">
+                        <p>
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span id="car_2_speed"> </span>&emsp;
+                        </p>
+                        <p>
+                            <i class="fa-solid fa-car-side"></i>
+                            <span id="car_2_state"></span>
+                        </p>
+                    </div>
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="car_2_coords"></span>
+                    </p>
+                </div>
+                <hr>
+
+                <!-- OBU 3 Informations -->
+                <h3>OBU 3</h3>
+                <div class="info">
+                    <div class="top_info">
+                        <p>
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span id="car_3_speed"> </span>&emsp;
+                        </p>
+                        <p>
+                            <i class="fa-solid fa-car-side"></i>
+                            <span id="car_3_state"></span>
+                        </p>
+                    </div>
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="car_3_coords"></span>
+                    </p>
+                </div>
+                <hr>
+
+                <!-- OBU 4 Informations -->
+                <h3>OBU 4</h3>
+                <div class="info">
+                    <div class="top_info">
+                        <p>
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span id="car_merge_speed"> </span>&emsp;
+                        </p>
+                        <p>
+                            <i class="fa-solid fa-car-side"></i>
+                            <span id="car_merge_state"></span>
+                        </p>
+                    </div>
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="car_merge_coords"></span>
+                    </p>
+                </div>
+                <hr>
+
+                <h4>Label</h4>
+                <div class="label">
+                    <ul>
+                        <li>
+                            <p>
+                                <i class="fa-solid fa-gauge-high"></i> Speed
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <i class="fa-solid fa-car-side"></i> State
+                            </p>
+                        </li>
+                    </ul>
+                    <ul>
+                        <li>
+                            <p>
+                                <i class="fa-solid fa-circle-xmark"></i> Intersection Point
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <i class="fa-solid fa-location-dot"></i> Coordinates
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <article>
+            <div class="inline" id='map' style='height:820px; width:100%;'>
+        </article>
+    </section>
+
+</body>
+
+</html>
